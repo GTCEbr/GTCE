@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biblioteca GEGP - eBooks Gabriel Play Entertainment</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            /* Fundo Bege Claro */
+            background-color: #fcfbf4;
+            color: #4e342e; /* Marrom escuro para leitura confortável */
+        }
+        
+        header {
+            /* Laranja Vibrante */
+            background: linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 4px solid #2e7d32; /* Detalhe Verde na borda */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        h2 {
+            /* Títulos em Laranja Queimado */
+            color: #e65100;
+            margin-top: 0;
+            border-bottom: 2px solid #a5d6a7; /* Linha verde clara */
+            padding-bottom: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            background-color: #ffffff; /* Cartão branco para contraste no bege */
+            padding: 30px;
+            margin-bottom: 30px;
+            /* Borda esquerda verde forte */
+            border-left: 6px solid #2e7d32;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .section:hover {
+            transform: translateY(-2px);
+        }
+
+        .highlight {
+            background-color: #fff3e0; /* Laranja bem clarinho */
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            border: 1px solid #ffe0b2;
+            color: #ef6c00;
+        }
+
+        .notice {
+            background-color: #e8f5e9; /* Verde bem clarinho */
+            color: #1b5e20;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 15px;
+            border: 1px solid #c8e6c9;
+        }
+
+        .maintenance {
+            background-color: #fff8e1; /* Amarelo/Bege */
+            color: #bf360c;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 15px;
+            border: 1px solid #ffecb3;
+            border-left: 4px solid #ff6f00;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        ul li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+        
+        ul li::before {
+            content: "📗"; /* Ícone de livro verde */
+            margin-right: 10px;
+        }
+
+        /* Estilo dos Botões dos Livros */
+        .book-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-book {
+            background-color: #2e7d32; /* Botão Verde */
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            flex: 1;
+            text-align: center;
+            min-width: 200px;
+            border-bottom: 3px solid #1b5e20;
+        }
+
+        .btn-book:hover {
+            background-color: #43a047;
+            transform: translateY(-1px);
+        }
+
+        .footer-note {
+            font-size: 0.9em; 
+            margin-top: 30px; 
+            color: #795548;
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Biblioteca GEGP</h1>
+        <p>Leitura Digital com os eBooks da Gabriel Play Entertainment</p>
+    </header>
+
+    <div class="container">
+
+        <section class="section">
+            <h2>📚 Sobre o Projeto</h2>
+            <p>A <strong>Biblioteca GEGP</strong> é um espaço criado especialmente para disponibilizar livros digitais (eBooks) produzidos pelo GEGP <strong>Grupo Gabriel Play Entertainment</strong>. O projeto tem como objetivo melhorar o acesso à leitura e incentivar o conhecimento através de conteúdos criativos.</p>
+        </section>
+
+        <section class="section">
+            <h2>🌐 Leitura Online no Site</h2>
+            <p>Agora, todos podem acessar e ler livros direto pelo site. De forma prática e gratuita. Os livros estarão organizados por categorias em qualquer lugar com internet.</p>
+            <p class="highlight">Você não precisa baixar nada! Basta acessar a seção de leitura e escolher seu título favorito.</p>
+            <p class="notice">⚠️ Aviso: Novos títulos em Abril de 2026</p>
+            <p class="maintenance">🛠️ Manutenção Técnica: Os títulos <em>"Ladrão do Tempo"</em> e <em>"Só Mais Um Dia"</em> estão indisponíveis para ajustes.</p>
+            
+            <!-- Botões adicionados conforme solicitado -->
+            <div class="book-buttons">
+                <a href="https://sites.google.com/view/gegp/biblioteca-gegp/o-ladr%C3%A3o-do-tempo" target="_blank" class="btn-book">Ler "O Ladrão do Tempo"</a>
+                <a href="https://sites.google.com/view/gegp/biblioteca-gegp/s%C3%B3-mais-um-dia" target="_blank" class="btn-book">Ler "Só Mais Um Dia"</a>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>📖 O que você encontrará?</h2>
+            <ul>
+                <li>Histórias autorais criadas pelo grupo Gabriel Play</li>
+                <li>Livros interativos</li>
+                <li>Materiais de apoio para estudo, como dicas de Python.</li>
+                <li>Ficções, aventuras, contos e projetos colaborativos</li>
+                <li>Novidades lançadas no Ovelha Fala.</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>🚀 Nosso Objetivo</h2>
+            <p>Com a Biblioteca GEGP, queremos aproximar a leitura de todos, para que entendam mais sobre nosso universo.</p>
+            <div class="footer-note">
+                AVISO: ATUALMENTE O CONTEÚDO DESTA PÁGINA É FEITO DE FORMA 100% HUMANA, mas corrigida por IA.
+            </div>
+        </section>
+    </div>
+
+</body>
+</html>
