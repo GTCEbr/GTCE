@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biblioteca GEGP - eBooks</title>
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <style>
+        :root {
+            --bg-body: #f0f2f5;       /* Cinza azulado (Estilo Sala do Futuro) */
+            --bg-card: #ffffff;
+            --primary: #ff6f00;       /* Laranja GEGP */
+            --secondary: #2e7d32;     /* Verde GEGP */
+            --text-dark: #333333;
+            --text-muted: #666666;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .brand span { color: var(--primary); }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-bio {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.2s;
+        }
+        .btn-bio:hover { background-color: #e0e0e0; }
+
+        /* --- CONTAINER PRINCIPAL --- */
+        .main-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::before {
+            content: '';
+            display: block;
+            width: 5px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* --- GRID DE LIVROS --- */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 30px;
+        }
+
+        /* --- CARD DE LIVRO (ESTILO SCREENSHOT 30) --- */
+        .book-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none; /* Para o link funcionar no card todo */
+            color: inherit;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .book-cover {
+            height: 280px;
+            background: linear-gradient(135deg, #eee 0%, #ddd 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        /* Capa específica para Vila da Ovelha (Simulada com CSS) */
+        .cover-ovelha {
+            background: linear-gradient(to bottom right, #8bc34a, #558b2f);
+            color: white;
+        }
+
+        .book-content {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .book-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+
+        .book-author {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .book-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #f0f0f0;
+            padding-top: 10px;
+        }
+
+        .file-type {
+            background: #ffebee;
+            color: #d32f2f;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* --- PLACEHOLDERS VAZIOS --- */
+        .empty-slot {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 380px;
+            color: #aaa;
+            background: rgba(255,255,255,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <span class="material-symbols-rounded" style="color:var(--primary);">menu_book</span>
+            Biblioteca <span>GEGP</span>
+        </div>
+        <div class="header-actions">
+            <a href="bio.html" class="btn-bio">
+                <span class="material-symbols-rounded">account_circle</span>
+                Ir para Bio
+            </a>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <div class="section-title">Estante Digital</div>
+
+        <div class="books-grid">
+            
+            <!-- LIVRO 1: A VILA DA OVELHA -->
+            <!-- Link direto para o PDF. target="_blank" abre em nova guia para leitura/download -->
+            <a href="V1.pdf" target="_blank" class="book-card">
+                <div class="book-cover cover-ovelha">
+                    <div>
+                        <span class="material-symbols-rounded" style="font-size:48px; opacity:0.8;">grass</span>
+                        <h3 style="margin:10px 0 0 0; text-shadow:0 2px 4px rgba(0,0,0,0.2);">A Vila da Ovelha</h3>
+                        <small style="opacity:0.9;">Origem</small>
+                    </div>
+                </div>
+                <div class="book-content">
+                    <div class="book-title">A Vila da Ovelha: Origem</div>
+                    <div class="book-author">Originais GEGP</div>
+                    
+                    <div class="book-footer">
+                        <span style="font-size:0.8rem; color:#888;">Volume 1</span>
+                        <div class="file-type">
+                            <span class="material-symbols-rounded" style="font-size:14px;">picture_as_pdf</span> PDF
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- SLOT VAZIO (Para dar volume visual) -->
+            <div class="empty-slot">
+                <span class="material-symbols-rounded" style="font-size:40px; margin-bottom:10px;">add_circle_outline</span>
+                <p style="margin:0; font-size:0.9rem;">Em Breve</p>
+                <small>Novos títulos</small>
+            </div>
+
+            <div class="empty-slot">
+                <span class="material-symbols-rounded" style="font-size:40px; margin-bottom:10px;">lock</span>
+                <p style="margin:0; font-size:0.9rem;">Bloqueado</p>
+                <small>Aguarde Lançamento</small>
+            </div>
+
+        </div>
+
+        <div style="margin-top: 50px; padding: 20px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #ff9800;">
+            <strong style="color: #e65100; display:flex; align-items:center; gap:5px;">
+                <span class="material-symbols-rounded">info</span> Segurança
+            </strong>
+            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #5d4037;">
+                Para sua segurança e conformidade com o <strong>ECA Digital</strong>, esta biblioteca é apenas para leitura. Não é possível comentar ou baixar arquivos sem autorização.
+            </p>
+        </div>
+
+    </div>
+
+</body>
+</html>
