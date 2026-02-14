@@ -1,1 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTIE Music Player</title>
+    
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
 
+    <style>
+        :root {
+            --bg-dark: #000000;
+            --bg-player: #161616;
+            --accent: #00e676; /* Verde GTIE */
+            --accent-secondary: #ff6d00; /* Laranja GTIE */
+            --text-main: #ffffff;
+            --text-sub: #a0a0a0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-dark);
+        }
+
+        .app-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.2rem; font-weight: 700;
+        }
+        .app-title span { color: var(--accent); }
+
+        .header-icons { display: flex; gap: 15px; }
+        .icon-btn { color: white; background: none; border: none; cursor: pointer; }
+
+        /* --- ABAS (TABS) --- */
+        .tabs {
+            display: flex;
+            gap: 20px;
+            padding: 0 20px 10px;
+            border-bottom: 1px solid #222;
+        }
+
+        .tab-btn {
+            background: none; border: none; color: var(--text-sub);
+            font-size: 1rem; font-weight: 600; padding: 8px 12px;
+            cursor: pointer; position: relative;
+        }
+
+        .tab-btn.active { color: white; }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: -11px; left: 0; width: 100%; height: 3px;
+            background: var(--accent-secondary); border-radius: 2px 2px 0 0;
+        }
+
+        /* --- LISTA DE MÚSICAS --- */
+        #content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 120px; /* Espaço para o player */
+        }
+
+        .song-item {
+            display: flex; align-items: center; gap: 15px;
+            padding: 12px; border-radius: 12px;
+            cursor: pointer; transition: 0.2s;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .song-item:hover { background-color: #1a1a1a; }
+        .song-item.playing { 
+            background-color: rgba(0, 230, 118, 0.1); 
+            border-left: 3px solid var(--accent);
+        }
+        .song-item.playing .song-title { color: var(--accent); }
+        .song-item.error-file { opacity: 0.5; pointer-events: none; } /* Estilo para arquivo não encontrado */
+
+        .album-art {
+            width: 50px; height: 50px; border-radius: 8px;
+            background: linear-gradient(135deg, #333, #555);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: #888; flex-shrink: 0;
+        }
+        
+        /* Cores aleatórias para capas */
+        .art-1 { background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%); }
+        .art-2 { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+        .art-3 { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
+        .art-4 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+
+        .song-info { flex: 1; }
+        .song-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 3px; display: block; }
+        .song-artist { color: var(--text-sub); font-size: 0.8rem; }
+
+        /* --- PLAYER BAR (LARK STYLE) --- */
+        .player-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--bg-player);
+            padding: 10px 20px 25px;
+            border-top: 1px solid #222;
+            display: flex; flex-direction: column; gap: 10px;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+            z-index: 100;
+        }
+
+        .progress-container {
+            width: 100%; display: flex; align-items: center; gap: 10px;
+            font-size: 0.7rem; color: var(--text-sub);
+        }
+        
+        input[type="range"] {
+            flex: 1; -webkit-appearance: none; height: 4px; background: #333;
+            border-radius: 2px; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 12px; height: 12px;
+            background: var(--accent); border-radius: 50%;
+        }
+
+        .controls-row {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .current-track-info {
+            display: flex; align-items: center; gap: 12px; width: 35%;
+        }
+        .mini-art { width: 45px; height: 45px; border-radius: 8px; background: #333; }
+        .mini-text h4 { font-size: 0.9rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; color: white; }
+        .mini-text p { font-size: 0.75rem; color: var(--text-sub); margin: 0; }
+
+        .main-controls {
+            display: flex; align-items: center; gap: 25px;
+        }
+        
+        .ctrl-btn {
+            background: none; border: none; color: white; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .ctrl-btn:hover { color: var(--accent); transform: scale(1.1); }
+        
+        .play-btn {
+            width: 55px; height: 55px; background: var(--accent); border-radius: 50%;
+            color: black; box-shadow: 0 4px 15px rgba(0, 230, 118, 0.4);
+        }
+        .play-btn:hover { background: white; color: black; transform: scale(1.1); }
+
+        .extra-controls {
+            width: 35%; display: flex; justify-content: flex-end; gap: 20px;
+        }
+
+        .loop-active { color: var(--accent-secondary) !important; text-shadow: 0 0 10px rgba(255, 109, 0, 0.5); }
+
+        .empty-state { text-align: center; margin-top: 60px; color: #555; }
+        .empty-state span { font-size: 50px; margin-bottom: 10px; display: block; opacity: 0.5; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="app-title">
+            <span class="material-symbols-rounded" style="color:var(--accent);">graphic_eq</span>
+            GTIE Music
+        </div>
+        <div class="header-icons">
+            <button class="icon-btn"><span class="material-symbols-rounded">more_vert</span></button>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="switchTab('songs')">Músicas</button>
+        <button class="tab-btn" onclick="switchTab('playlists')">Playlists</button>
+    </nav>
+
+    <!-- ÁREA DE LISTA -->
+    <div id="content-area"></div>
+
+    <!-- PLAYER FIXO -->
+    <div class="player-bar">
+        <div class="progress-container">
+            <span id="currTime">0:00</span>
+            <input type="range" id="progressBar" value="0" min="0" max="100" onchange="seekSong()">
+            <span id="durTime">--:--</span>
+        </div>
+
+        <div class="controls-row">
+            <!-- Info -->
+            <div class="current-track-info">
+                <div class="mini-art" id="playerArt"></div>
+                <div class="mini-text">
+                    <h4 id="playerTitle">Tocar Música</h4>
+                    <p id="playerArtist">Escolha na lista</p>
+                </div>
+            </div>
+
+            <!-- Controles -->
+            <div class="main-controls">
+                <button class="ctrl-btn" onclick="prevSong()"><span class="material-symbols-rounded" style="font-size:32px;">skip_previous</span></button>
+                <button class="ctrl-btn play-btn" onclick="playPause()">
+                    <span class="material-symbols-rounded" id="playIcon" style="font-size:36px;">play_arrow</span>
+                </button>
+                <button class="ctrl-btn" onclick="nextSong()"><span class="material-symbols-rounded" style="font-size:32px;">skip_next</span></button>
+            </div>
+
+            <!-- Extras -->
+            <div class="extra-controls">
+                <button class="ctrl-btn" id="loopBtn" onclick="toggleLoop()" title="Loop">
+                    <span class="material-symbols-rounded">repeat</span>
+                </button>
+                <button class="ctrl-btn" onclick="addToPlaylist()" title="Favoritar">
+                    <span class="material-symbols-rounded">favorite_border</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        // ======================================================
+        // ATENÇÃO: COLOQUE AQUI OS NOMES DOS SEUS ARQUIVOS MP3
+        // Eles devem estar DENTRO DA PASTA 'música' no GitHub.
+        // ======================================================
+        const listaDeMusicas = [
+            { titulo: "Música 01", artista: "Artista Desconhecido", arquivo: "Upbeat & Uplifting Fun Ukulele (Without vocals).wav", cover: "art-1" },
+            { titulo: "Música 02", artista: "Artista Desconhecido", arquivo: "musica2.mp3", cover: "art-2" },
+            { titulo: "Música 03", artista: "Artista Desconhecido", arquivo: "musica3.mp3", cover: "art-3" },
+            { titulo: "Música 04", artista: "Artista Desconhecido", arquivo: "musica4.mp3", cover: "art-4" }
+            // Adicione mais linhas se tiver mais músicas
+        ];
+
+        // Variáveis
+        let currentSongIndex = 0;
+        let isPlaying = false;
+        let isLooping = false;
+        let playlist = JSON.parse(localStorage.getItem('gtie_playlist')) || [];
+
+        const audio = document.getElementById('audioPlayer');
+        const contentArea = document.getElementById('content-area');
+        const playIcon = document.getElementById('playIcon');
+        const progressBar = document.getElementById('progressBar');
+        const loopBtn = document.getElementById('loopBtn');
+        
+        // Elementos do Mini Player
+        const pTitle = document.getElementById('playerTitle');
+        const pArtist = document.getElementById('playerArtist');
+        const pArt = document.getElementById('playerArt');
+
+        // Inicialização
+        window.onload = () => {
+            renderSongs();
+            
+            // Tratamento de Erro (Caso o arquivo não exista no Git)
+            audio.addEventListener('error', (e) => {
+                console.error("Erro ao carregar:", audio.src);
+                alert("Erro: Arquivo não encontrado.\nVerifique se o nome no código é igual ao arquivo na pasta.");
+                isPlaying = false;
+                playIcon.innerText = "play_arrow";
+            });
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', () => {
+                if (isLooping) {
+                    audio.currentTime = 0;
+                    audio.play();
+                } else {
+                    nextSong();
+                }
+            });
+        };
+
+        function renderSongs() {
+            contentArea.innerHTML = "";
+            
+            if (listaDeMusicas.length === 0) {
+                contentArea.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">music_off</span><p>Lista vazia no código.</p></div>`;
+                return;
+            }
+
+            listaDeMusicas.forEach((song, index) => {
+                const item = document.createElement('div');
+                item.className = `song-item ${index === currentSongIndex && isPlaying ? 'playing' : ''}`;
+                item.onclick = () => loadAndPlay(index);
+                item.innerHTML = `
+                    <div class="album-art ${song.cover}">
+                        <span class="material-symbols-rounded" style="color:white; opacity:0.8;">music_note</span>
+                    </div>
+                    <div class="song-info">
+                        <span class="song-title">${song.titulo}</span>
+                        <span class="song-artist">${song.arquivo}</span>
+                    </div>
+                    <div class="song-options">
+                        <span class="material-symbols-rounded">play_circle</span>
+                    </div>
+                `;
+                contentArea.appendChild(item);
+            });
+        }
+
+        function renderPlaylist() {
+            contentArea.innerHTML = `<h3 style="color:var(--accent); margin-bottom:15px;">Favoritos</h3>`;
+            if (playlist.length === 0) {
+                contentArea.innerHTML += `<div class="empty-state"><p>Nenhuma música favoritada.</p></div>`;
+                return;
+            }
+            playlist.forEach((song, index) => {
+                const item = document.createElement('div');
+                item.className = 'song-item';
+                item.innerHTML = `
+                    <div class="album-art ${song.cover}"><span class="material-symbols-rounded">favorite</span></div>
+                    <div class="song-info">
+                        <span class="song-title">${song.titulo}</span>
+                    </div>
+                    <div class="song-options" onclick="removeFromPlaylist(${index})">
+                        <span class="material-symbols-rounded" style="color:var(--accent-secondary)">delete</span>
+                    </div>
+                `;
+                contentArea.appendChild(item);
+            });
+        }
+
+        function loadAndPlay(index) {
+            currentSongIndex = index;
+            const song = listaDeMusicas[index];
+            
+            // Tenta carregar. Se o arquivo não estiver na pasta, o evento 'error' dispara.
+            audio.src = song.arquivo; 
+            
+            pTitle.innerText = song.titulo;
+            pArtist.innerText = song.artista;
+            pArt.className = `mini-art ${song.cover}`;
+
+            playSong();
+            renderSongs();
+        }
+
+        function playSong() {
+            audio.play().then(() => {
+                isPlaying = true;
+                playIcon.innerText = "pause";
+                renderSongs();
+            }).catch(err => console.log("Aguardando interação ou arquivo não existe."));
+        }
+
+        function pauseSong() {
+            audio.pause();
+            isPlaying = false;
+            playIcon.innerText = "play_arrow";
+            renderSongs();
+        }
+
+        function playPause() {
+            if (isPlaying) pauseSong();
+            else {
+                if(!audio.src) loadAndPlay(currentSongIndex);
+                else playSong();
+            }
+        }
+
+        function nextSong() {
+            currentSongIndex = (currentSongIndex + 1) % listaDeMusicas.length;
+            loadAndPlay(currentSongIndex);
+        }
+
+        function prevSong() {
+            currentSongIndex = (currentSongIndex - 1 + listaDeMusicas.length) % listaDeMusicas.length;
+            loadAndPlay(currentSongIndex);
+        }
+
+        function toggleLoop() {
+            isLooping = !isLooping;
+            loopBtn.classList.toggle('loop-active');
+        }
+
+        function updateProgress(e) {
+            const { duration, currentTime } = e.srcElement;
+            if (isNaN(duration)) return;
+            const percent = (currentTime / duration) * 100;
+            progressBar.value = percent;
+            
+            document.getElementById('currTime').innerText = formatTime(currentTime);
+            document.getElementById('durTime').innerText = formatTime(duration);
+        }
+
+        function formatTime(s) {
+            let min = Math.floor(s / 60);
+            let sec = Math.floor(s % 60);
+            if (sec < 10) sec = '0' + sec;
+            return `${min}:${sec}`;
+        }
+
+        function seekSong() {
+            const duration = audio.duration;
+            audio.currentTime = (progressBar.value * duration) / 100;
+        }
+
+        function addToPlaylist() {
+            const song = listaDeMusicas[currentSongIndex];
+            if (!playlist.some(s => s.arquivo === song.arquivo)) {
+                playlist.push(song);
+                localStorage.setItem('gtie_playlist', JSON.stringify(playlist));
+                alert("Adicionado aos Favoritos!");
+            }
+        }
+
+        function removeFromPlaylist(index) {
+            playlist.splice(index, 1);
+            localStorage.setItem('gtie_playlist', JSON.stringify(playlist));
+            renderPlaylist();
+        }
+
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            if (tab === 'songs') renderSongs();
+            else renderPlaylist();
+        }
+    </script>
+</body>
+</html>
