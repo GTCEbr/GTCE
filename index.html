@@ -23,13 +23,137 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-dark);
             color: var(--text);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
             overflow: hidden; /* Sem rolagem, foco total */
         }
 
-        /* HEADER */
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        /* CONTAINER PRINCIPAL DO HUB (Inicia Oculto) */
+        #mainContent {
+            display: none; /* Só aparece após aceitar os termos */
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* ------------------------------------- */
+        /* ESTILOS DO MODAL DE TERMOS DE USO     */
+        /* ------------------------------------- */
+        #termsModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 40px 30px;
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            animation: fadeIn 0.4s ease-out;
+            font-family: Arial, Helvetica, sans-serif; /* Fonte padrão para o aviso */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-content img {
+            width: 110px;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        .modal-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #f8fafc;
+        }
+
+        .modal-content p {
+            font-size: 15px;
+            color: #94a3b8;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .pdf-link {
+            display: inline-block;
+            background: #334155;
+            color: #60a5fa;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 30px;
+            transition: 0.2s;
+            border: 1px solid #475569;
+        }
+
+        .pdf-link:hover {
+            background: #475569;
+            color: #93c5fd;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-action {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            flex: 1;
+        }
+
+        .btn-agree {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-agree:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-disagree {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .btn-disagree:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* ------------------------------------- */
+        /* ESTILOS ORIGINAIS DO GTIE HUB         */
+        /* ------------------------------------- */
         header {
             text-align: center;
             padding: 40px 20px;
@@ -50,7 +174,6 @@
             text-transform: uppercase;
         }
 
-        /* MAIN AREA - BOTOES */
         main {
             flex: 1;
             display: flex;
@@ -120,7 +243,6 @@
         }
         .btn-music .icon { color: var(--green); }
 
-        /* FOOTER */
         footer {
             text-align: center;
             padding: 20px;
@@ -128,47 +250,102 @@
             font-size: 0.8rem;
         }
 
-        /* RESPONSIVO */
         @media (max-width: 700px) {
             main { flex-direction: column; gap: 20px; }
             .hub-btn { width: 100%; height: 160px; flex-direction: row; gap: 20px; }
             .hub-btn span.icon { margin-bottom: 0; font-size: 50px; }
             .text-group { text-align: left; }
+            .modal-buttons { flex-direction: column; }
+            .btn-action { width: 100%; }
         }
     </style>
 </head>
-<body>
+<body class="modal-open">
 
-    <header>
-        <div class="logo">GTIE <span>HUB</span></div>
-        <div class="subtitle">Central de Recursos</div>
-    </header>
+    <!-- OVERLAY DE TERMOS DE USO DA GTCE -->
+    <div id="termsModal">
+        <div class="modal-content">
+            <img src="gegp.png" alt="Logo GEGP" onerror="this.src='https://via.placeholder.com/110x110/334155/ffffff?text=GTCE'">
+            
+            <h2>Aviso da GTCE</h2>
+            <p>Bem-vindo! Antes de acessar nossos sistemas de produtividade e criação, é obrigatório ler e concordar com os nossos Termos de Uso oficiais fornecidos pela GTCE Holding.</p>
+            
+            <a href="https://www.mediafire.com/file/iv0bz9dq8ohq2wu/14_3_26_Termos+de+uso_GTCE.PDF/file" target="_blank" class="pdf-link">
+                📄 Ler Termos de Uso (PDF)
+            </a>
 
-    <main>
-        <!-- BOTÃO 1: BIBLIOTECA (LARANJA) -->
-        <!-- Caminho ajustado para a pasta 'biblioteca' -->
-        <a href="biblioteca/bio.html" class="hub-btn btn-bio">
-            <span class="material-symbols-rounded icon">menu_book</span>
-            <div class="text-group">
-                <h2>Biblioteca Home</h2>
-                <p>Acervo Digital GEGP</p>
+            <div class="modal-buttons">
+                <button class="btn-action btn-disagree" onclick="declineTerms()">Não Concordar</button>
+                <button class="btn-action btn-agree" onclick="acceptTerms()">Concordar e Entrar</button>
             </div>
-        </a>
+        </div>
+    </div>
 
-        <!-- BOTÃO 2: MUSIC (VERDE) -->
-        <!-- Caminho ajustado para a pasta 'música' -->
-        <a href="music/GTIEmus.html" class="hub-btn btn-music">
-            <span class="material-symbols-rounded icon">headphones</span>
-            <div class="text-group">
-                <h2>GTIE Music</h2>
-                <p>Foco & Produtividade</p>
-            </div>
-        </a>
-    </main>
+    <!-- CONTEÚDO DA PÁGINA GTIE HUB -->
+    <div id="mainContent">
+        <header>
+            <div class="logo">GTIE <span>HUB</span></div>
+            <div class="subtitle">Central de Recursos</div>
+        </header>
 
-    <footer>
-        &copy; 2026 GTCE Group | Tecnologia e Inovação
-    </footer>
+        <main>
+            <!-- BOTÃO 1: BIBLIOTECA (LARANJA) -->
+            <a href="biblioteca/bio.html" class="hub-btn btn-bio">
+                <span class="material-symbols-rounded icon">menu_book</span>
+                <div class="text-group">
+                    <h2>Biblioteca Home</h2>
+                    <p>Acervo Digital GEGP</p>
+                </div>
+            </a>
 
+            <!-- BOTÃO 2: MUSIC (VERDE) -->
+            <a href="music/GTIEmus.html" class="hub-btn btn-music">
+                <span class="material-symbols-rounded icon">headphones</span>
+                <div class="text-group">
+                    <h2>GTIE Music</h2>
+                    <p>Foco & Produtividade</p>
+                </div>
+            </a>
+        </main>
+
+        <footer>
+            &copy; 2026 GTCE Group | Tecnologia e Inovação
+        </footer>
+    </div>
+
+    <!-- SCRIPTS DE FUNCIONAMENTO DO MODAL -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const termsAccepted = localStorage.getItem("gtce_terms_accepted");
+            const modal = document.getElementById("termsModal");
+            const content = document.getElementById("mainContent");
+
+            if (termsAccepted === "true") {
+                // Se já aceitou, esconde o modal e exibe o GTIE Hub como Flexbox
+                modal.style.display = "none";
+                content.style.display = "flex";
+                document.body.classList.remove("modal-open");
+            } else {
+                // Caso contrário, mostra o modal
+                modal.style.display = "flex";
+            }
+        });
+
+        function acceptTerms() {
+            localStorage.setItem("gtce_terms_accepted", "true");
+            document.getElementById("termsModal").style.display = "none";
+            document.getElementById("mainContent").style.display = "flex"; // Usa flex para manter o design original
+            document.body.classList.remove("modal-open");
+        }
+
+        function declineTerms() {
+            alert("Você optou por não concordar. O acesso aos serviços da GTIE requer a aceitação dos Termos da GTCE.");
+            if(window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = "about:blank"; 
+            }
+        }
+    </script>
 </body>
 </html>
