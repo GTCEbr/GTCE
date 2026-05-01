@@ -14,6 +14,8 @@
             --bg-dark: #0a0a0a;
             --orange: #ff6d00;
             --green: #00e676;
+            --blue: #3b82f6; /* Nova cor para o Docs */
+            --purple: #8b5cf6; /* Nova cor para Lumiana.AI */
             --text: #ffffff;
         }
 
@@ -24,6 +26,7 @@
             background-color: var(--bg-dark);
             color: var(--text);
             overflow: hidden; /* Sem rolagem, foco total */
+            /* Se houver muitos botões em telas pequenas, pode ser necessário voltar o overflow-y: auto para o body normal no futuro */
         }
 
         body.modal-open {
@@ -36,6 +39,7 @@
             flex-direction: column;
             height: 100vh;
             width: 100%;
+            overflow-y: auto; /* Adicionado para permitir rolagem caso os 4 botões não caibam na altura da tela */
         }
 
         /* ------------------------------------- */
@@ -156,7 +160,7 @@
         /* ------------------------------------- */
         header {
             text-align: center;
-            padding: 40px 20px;
+            padding: 40px 20px 20px 20px;
         }
         .logo {
             font-size: 2.5rem;
@@ -181,6 +185,9 @@
             align-items: center;
             gap: 40px;
             padding: 20px;
+            flex-wrap: wrap; /* Permite que os botões quebrem linha */
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .hub-btn {
@@ -197,6 +204,7 @@
             position: relative;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
         }
 
         .hub-btn span.icon {
@@ -243,18 +251,42 @@
         }
         .btn-music .icon { color: var(--green); }
 
+        /* ESTILO AZUL (DOCS) */
+        .btn-docs {
+            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .btn-docs:hover {
+            transform: translateY(-10px);
+            border-color: var(--blue);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+        }
+        .btn-docs .icon { color: var(--blue); }
+
+        /* ESTILO ROXO (LUMIANA) */
+        .btn-lumiana {
+            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .btn-lumiana:hover {
+            transform: translateY(-10px);
+            border-color: var(--purple);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+        .btn-lumiana .icon { color: var(--purple); }
+
         footer {
             text-align: center;
             padding: 20px;
             color: #444;
             font-size: 0.8rem;
+            margin-top: auto;
         }
 
         @media (max-width: 700px) {
-            main { flex-direction: column; gap: 20px; }
-            .hub-btn { width: 100%; height: 160px; flex-direction: row; gap: 20px; }
+            main { flex-direction: column; gap: 20px; flex-wrap: nowrap; }
+            .hub-btn { width: 100%; height: 120px; flex-direction: row; gap: 20px; text-align: left; justify-content: flex-start; padding-left: 30px;}
             .hub-btn span.icon { margin-bottom: 0; font-size: 50px; }
-            .text-group { text-align: left; }
             .modal-buttons { flex-direction: column; }
             .btn-action { width: 100%; }
         }
@@ -270,7 +302,7 @@
             <h2>Aviso da GTCE</h2>
             <p>Bem-vindo! Antes de acessar nossos sistemas de produtividade e criação, é obrigatório ler e concordar com os nossos Termos de Uso oficiais fornecidos pela GTCE Holding.</p>
             
-            <a href="https://www.mediafire.com/file/iv0bz9dq8ohq2wu/14_3_26_Termos+de+uso_GTCE.PDF/file" target="_blank" class="pdf-link">
+            <a href="termo.pdf" target="_blank" class="pdf-link">
                 📄 Ler Termos de Uso (PDF)
             </a>
 
@@ -304,6 +336,24 @@
                 <div class="text-group">
                     <h2>GTIE Music</h2>
                     <p>Foco & Produtividade</p>
+                </div>
+            </a>
+
+            <!-- BOTÃO 3: DOCS (AZUL) -->
+            <a href="docs/Docs.html" class="hub-btn btn-docs">
+                <span class="material-symbols-rounded icon">description</span>
+                <div class="text-group">
+                    <h2>GTIE Docs</h2>
+                    <p>Criação e Textos</p>
+                </div>
+            </a>
+
+            <!-- BOTÃO 4: LUMIANA AI (ROXO) -->
+            <a href="lumiana/Lumiana.html" class="hub-btn btn-lumiana">
+                <span class="material-symbols-rounded icon">smart_toy</span>
+                <div class="text-group">
+                    <h2>Lumiana.AI</h2>
+                    <p>Assistente Virtual</p>
                 </div>
             </a>
         </main>
