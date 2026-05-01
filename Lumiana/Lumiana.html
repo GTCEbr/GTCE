@@ -1,1 +1,1118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumiana.AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+  --bg: #212121;
+  --sidebar: #171717;
+  --surface: #2f2f2f;
+  --surface-hover: #3a3a3a;
+  --border: rgba(255,255,255,0.08);
+  --text: #ececec;
+  --text-muted: #8e8ea0;
+  --text-faint: #555;
+  --accent: #a78bfa;
+  --accent-glow: rgba(167,139,250,0.15);
+  --user-bg: #2f2f2f;
+  --bot-bg: transparent;
+  --input-bg: #2f2f2f;
+  --radius: 16px;
+  --radius-sm: 8px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ── */
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 260px;
+  background: var(--sidebar);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+  gap: 6px;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 20px;
+}
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.logo-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.logo-name span {
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+.sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+}
+
+.sidebar-btn.active {
+  background: rgba(255,255,255,0.07);
+  color: var(--text);
+}
+
+.sidebar-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.sidebar-section {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 12px 10px 4px;
+}
+
+.sidebar-spacer { flex: 1; }
+
+.personality-label {
+  font-size: 11px;
+  color: var(--text-faint);
+  padding: 0 10px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mode-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0 6px 8px;
+}
+
+.pill {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-muted);
+  font-family: 'Geist', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pill:hover { border-color: rgba(167,139,250,0.4); color: var(--text); }
+.pill.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+.mem-badge {
+  font-size: 11px;
+  color: var(--text-faint);
+  padding: 10px 10px 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.mem-badge .val { color: var(--accent); font-family: 'Geist Mono', monospace; }
+
+/* ── Main ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Chat ── */
+.chat-wrap {
+  flex: 1;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 24px;
+}
+
+.chat-wrap::-webkit-scrollbar { width: 4px; }
+.chat-wrap::-webkit-scrollbar-track { background: transparent; }
+.chat-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.messages {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Welcome screen */
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  gap: 12px;
+  animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.welcome-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 4px;
+  box-shadow: 0 0 40px rgba(167,139,250,0.25);
+}
+
+.welcome h1 {
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.welcome p {
+  font-size: 15px;
+  color: var(--text-muted);
+  max-width: 380px;
+  font-weight: 300;
+}
+
+.suggestion-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.chip {
+  padding: 8px 16px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chip:hover {
+  border-color: rgba(167,139,250,0.4);
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+/* Message rows */
+.msg-row {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  animation: msgIn 0.2s ease both;
+}
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.msg-row.user { flex-direction: row-reverse; }
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.avatar.bot {
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.avatar.user {
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.bubble {
+  max-width: 80%;
+  min-width: 0;
+}
+
+.msg-row.user .bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.bubble-text {
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 300;
+  word-break: break-word;
+}
+
+.msg-row.user .bubble-text {
+  background: var(--surface);
+  color: var(--text);
+  border-bottom-right-radius: 4px;
+}
+
+.msg-row.bot .bubble-text {
+  background: transparent;
+  color: var(--text);
+  padding-left: 0;
+}
+
+.msg-row.system .bubble-text {
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 13px;
+  font-style: italic;
+  padding-left: 0;
+}
+
+.bubble-meta {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 4px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.learned-tag {
+  font-size: 10px;
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 1px solid rgba(167,139,250,0.3);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+/* Thinking dots */
+.thinking {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.thinking span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  animation: dot 1.2s infinite ease-in-out;
+}
+
+.thinking span:nth-child(2) { animation-delay: 0.2s; }
+.thinking span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dot {
+  0%, 60%, 100% { transform: scale(0.8); opacity: 0.4; }
+  30% { transform: scale(1.1); opacity: 1; }
+}
+
+/* ── Input area ── */
+.input-area {
+  padding: 16px 24px 20px;
+  background: var(--bg);
+}
+
+.input-box {
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s;
+}
+
+.input-box:focus-within {
+  border-color: rgba(167,139,250,0.4);
+  box-shadow: 0 0 0 3px rgba(167,139,250,0.07);
+}
+
+.input-box textarea {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'Geist', sans-serif;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.6;
+  resize: none;
+  width: 100%;
+  min-height: 24px;
+  max-height: 200px;
+}
+
+.input-box textarea::placeholder { color: var(--text-faint); }
+
+.input-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-muted);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.action-btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+}
+
+.action-btn.learn {
+  border-color: rgba(96,165,250,0.3);
+  color: #60a5fa;
+}
+
+.action-btn.learn:hover {
+  background: rgba(96,165,250,0.08);
+}
+
+.send-btn {
+  margin-left: auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.send-btn:hover { background: #8b5cf6; transform: scale(1.05); }
+.send-btn:disabled { background: var(--surface); color: var(--text-faint); cursor: default; transform: none; }
+
+.input-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 8px;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Memory Panel (right overlay) ── */
+.mem-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+}
+
+.mem-panel.open { display: block; }
+
+.mem-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+}
+
+.mem-drawer {
+  position: absolute;
+  top: 0; right: 0;
+  width: 380px; height: 100%;
+  background: var(--sidebar);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.25s cubic-bezier(.22,.68,0,1.2) both;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.mem-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mem-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.mem-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 300; }
+
+.icon-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+
+.icon-btn:hover { background: var(--surface); color: var(--text); }
+
+.mem-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.mem-body::-webkit-scrollbar { width: 3px; }
+.mem-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.mem-empty {
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 14px;
+  padding: 48px 20px;
+  line-height: 1.8;
+}
+
+.mem-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--surface);
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  transition: border-color 0.15s;
+}
+
+.mem-item:hover { border-color: rgba(167,139,250,0.25); }
+
+.mem-trigger {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mem-trigger::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #60a5fa;
+  flex-shrink: 0;
+}
+
+.mem-response {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+.mem-footer-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.mem-count-pill {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 11px;
+}
+
+/* ── Learn mode banner ── */
+.learn-banner {
+  max-width: 760px;
+  margin: 0 auto 0;
+  background: rgba(96,165,250,0.08);
+  border: 1px solid rgba(96,165,250,0.2);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #60a5fa;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.learn-banner.visible { display: flex; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .sidebar { display: none; }
+  .mem-drawer { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">✦</div>
+      <span class="logo-name">Lumiana<span>.AI</span></span>
+    </div>
+
+    <button class="sidebar-btn active" id="new-chat-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      Nova conversa
+    </button>
+
+    <div class="sidebar-section">Personalidade</div>
+    <div class="mode-pills">
+      <button class="pill active" data-mode="neutro">Neutro</button>
+      <button class="pill" data-mode="formal">Formal</button>
+      <button class="pill" data-mode="casual">Casual</button>
+      <button class="pill" data-mode="direto">Direto</button>
+      <button class="pill" data-mode="curioso">Curioso</button>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="mem-badge">
+      <span>Padrões aprendidos</span>
+      <span class="val" id="mem-count">0</span>
+    </div>
+
+    <button class="sidebar-btn" id="open-mem-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+      Ver memória
+    </button>
+
+    <button class="sidebar-btn" id="clear-btn" style="color:#f87171">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      Limpar memória
+    </button>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="chat-wrap" id="chat-wrap">
+      <div class="messages" id="messages">
+        <!-- Welcome -->
+        <div class="welcome" id="welcome">
+          <div class="welcome-icon">✦</div>
+          <h1>Olá, eu sou Lumiana</h1>
+          <p>Seu assistente que aprende com cada conversa. Me ensine, e ficarei cada vez mais inteligente.</p>
+          <div class="suggestion-chips">
+            <button class="chip" data-msg="Olá!">👋 Dizer olá</button>
+            <button class="chip" data-msg="Quem é você?">🤖 Quem é você?</button>
+            <button class="chip" data-msg="Como você aprende?">💡 Como você aprende?</button>
+            <button class="chip" data-msg="O que você sabe fazer?">✨ O que você faz?</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Learn banner -->
+    <div class="learn-banner" id="learn-banner">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Modo aprendizado: <strong id="learn-trigger-text"></strong> — Digite a resposta ideal e envie.
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <div class="input-box">
+        <textarea id="user-input" placeholder="Mensagem para Lumiana..." rows="1"></textarea>
+        <div class="input-actions">
+          <button class="action-btn learn" id="btn-learn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Aprender
+          </button>
+          <button class="send-btn" id="btn-send" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="input-hint">Lumiana aprende e responde offline · Enter para enviar · <span id="sess-info">0 mensagens</span></div>
+    </div>
+  </main>
+</div>
+
+<!-- Memory Panel -->
+<div class="mem-panel" id="mem-panel">
+  <div class="mem-backdrop" id="mem-backdrop"></div>
+  <div class="mem-drawer">
+    <div class="mem-header">
+      <div>
+        <div class="mem-title">Base de conhecimento</div>
+        <div class="mem-subtitle">Padrões que Lumiana aprendeu</div>
+      </div>
+      <button class="icon-btn" id="close-mem-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="mem-body" id="mem-list"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  LUMIANA.AI — Offline · localStorage
+// ═══════════════════════════════════════
+const STORAGE_KEY = 'lumiana_memory_v1';
+
+let personality = 'neutro';
+let sessionMsgs = 0;
+let learnMode = false;
+let learnTrigger = '';
+
+// ── Memory ──────────────────────────────
+function mem() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveMem(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  document.getElementById('mem-count').textContent = data.length;
+}
+
+function teach(trigger, response) {
+  const data = mem();
+  const norm = normalize(trigger);
+  const idx = data.findIndex(m => normalize(m.trigger) === norm);
+  if (idx >= 0) {
+    data[idx].response = response;
+    data[idx].count = (data[idx].count || 1) + 1;
+    data[idx].updated = Date.now();
+  } else {
+    data.push({ trigger, response, count: 1, created: Date.now(), updated: Date.now() });
+  }
+  saveMem(data);
+}
+
+// ── NLP ─────────────────────────────────
+function normalize(s) {
+  return s.toLowerCase()
+    .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+    .replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function tokens(s) { return normalize(s).split(' ').filter(w => w.length > 2); }
+
+function match(input) {
+  const data = mem();
+  if (!data.length) return null;
+  const inorm = normalize(input);
+  const itok = tokens(input);
+  let best = null, top = 0;
+  for (const e of data) {
+    const enorm = normalize(e.trigger);
+    const etok = tokens(e.trigger);
+    if (inorm === enorm) return persona(e.response);
+    let score = 0;
+    if (inorm.includes(enorm) || enorm.includes(inorm)) score += 0.75;
+    const common = itok.filter(t => etok.includes(t)).length;
+    score += common / Math.max(itok.length, etok.length, 1);
+    score += Math.min((e.count || 1) * 0.015, 0.1);
+    if (score > top && score >= 0.3) { top = score; best = e.response; }
+  }
+  return best ? persona(best) : null;
+}
+
+// ── Personality ──────────────────────────
+const PERSONAS = {
+  neutro:  { pre: '',                    suf: '',                              fn: r => r },
+  formal:  { pre: 'Certamente. ',        suf: ' Posso auxiliar em mais algo?', fn: r => r[0].toUpperCase() + r.slice(1) },
+  casual:  { pre: 'Boa! ',              suf: ' 😄',                           fn: r => r.toLowerCase() },
+  direto:  { pre: '',                    suf: '',                              fn: r => r.replace(/[.!?]+$/, '') + '.' },
+  curioso: { pre: 'Que pergunta boa! ', suf: ' O que mais quer saber?',        fn: r => r },
+};
+
+const FALLBACKS = {
+  neutro:  'Ainda não sei sobre isso. Use "Aprender" para me ensinar! 😅',
+  formal:  'Lamento, não possuo dados sobre esse assunto. Utilize "Aprender" para me instruir.',
+  casual:  'Hmm, não faço ideia... me ensina? Clica em Aprender! 😅',
+  direto:  'Sem resposta. Ensine-me com "Aprender".',
+  curioso: 'Nunca vi isso antes! Me ensina? Estou curioso 🤔',
+};
+
+function persona(r) {
+  const p = PERSONAS[personality] || PERSONAS.neutro;
+  return p.pre + p.fn(r) + p.suf;
+}
+
+// ── UI helpers ───────────────────────────
+function now() { return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function hideWelcome() {
+  const w = document.getElementById('welcome');
+  if (w) w.remove();
+}
+
+function addMsg(role, text, learned = false) {
+  hideWelcome();
+  const wrap = document.getElementById('messages');
+  const row = document.createElement('div');
+  row.className = `msg-row ${role}`;
+
+  const isSystem = role === 'system';
+
+  if (isSystem) {
+    row.innerHTML = `
+      <div class="bubble">
+        <div class="bubble-text" style="color:var(--text-faint);font-size:13px;font-style:italic">${esc(text)}</div>
+      </div>`;
+  } else {
+    const avatarHtml = role === 'bot'
+      ? `<div class="avatar bot">L</div>`
+      : `<div class="avatar user">Você</div>`;
+
+    row.innerHTML = `
+      ${avatarHtml}
+      <div class="bubble">
+        <div class="bubble-text">${esc(text)}</div>
+        <div class="bubble-meta">${now()}${learned ? '<span class="learned-tag">aprendido</span>' : ''}</div>
+      </div>`;
+  }
+
+  wrap.appendChild(row);
+  document.getElementById('chat-wrap').scrollTop = 9999;
+  sessionMsgs++;
+  document.getElementById('sess-info').textContent = `${sessionMsgs} mensagem${sessionMsgs !== 1 ? 's' : ''}`;
+}
+
+function addThinking() {
+  hideWelcome();
+  const wrap = document.getElementById('messages');
+  const row = document.createElement('div');
+  row.className = 'msg-row bot';
+  row.id = '_thinking';
+  row.innerHTML = `
+    <div class="avatar bot">L</div>
+    <div class="bubble">
+      <div class="thinking"><span></span><span></span><span></span></div>
+    </div>`;
+  wrap.appendChild(row);
+  document.getElementById('chat-wrap').scrollTop = 9999;
+}
+
+function removeThinking() {
+  const t = document.getElementById('_thinking');
+  if (t) t.remove();
+}
+
+// ── Learn mode ────────────────────────────
+function enterLearn(trigger) {
+  learnTrigger = trigger;
+  learnMode = true;
+  document.getElementById('learn-banner').classList.add('visible');
+  document.getElementById('learn-trigger-text').textContent = `"${trigger}"`;
+  document.getElementById('user-input').placeholder = 'Digite a resposta ideal para Lumiana aprender...';
+  document.getElementById('btn-learn').textContent = 'Cancelar';
+  document.getElementById('btn-learn').style.color = '#f87171';
+  document.getElementById('btn-learn').style.borderColor = 'rgba(248,113,113,0.3)';
+}
+
+function exitLearn() {
+  learnMode = false;
+  learnTrigger = '';
+  document.getElementById('learn-banner').classList.remove('visible');
+  document.getElementById('user-input').placeholder = 'Mensagem para Lumiana...';
+  document.getElementById('btn-learn').innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Aprender`;
+  document.getElementById('btn-learn').style.color = '';
+  document.getElementById('btn-learn').style.borderColor = '';
+}
+
+// ── Core send ────────────────────────────
+function send() {
+  const ta = document.getElementById('user-input');
+  const text = ta.value.trim();
+  if (!text) return;
+  ta.value = ''; ta.style.height = 'auto';
+  updateSendBtn();
+
+  if (learnMode) {
+    teach(learnTrigger, text);
+    addMsg('user', text, true);
+    addMsg('system', `✓ Aprendi: "${learnTrigger}" → "${text}"`);
+    exitLearn();
+    renderMemList();
+    return;
+  }
+
+  addMsg('user', text);
+  addThinking();
+
+  setTimeout(() => {
+    removeThinking();
+    const reply = match(text);
+    addMsg('bot', reply || FALLBACKS[personality] || FALLBACKS.neutro);
+  }, 320 + Math.random() * 200);
+}
+
+// ── Memory panel ─────────────────────────
+function renderMemList() {
+  const list = document.getElementById('mem-list');
+  const data = mem();
+  if (!data.length) {
+    list.innerHTML = '<div class="mem-empty">Nenhum padrão ainda.<br>Use <strong>Aprender</strong> para ensinar Lumiana.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  [...data].reverse().forEach(e => {
+    const d = document.createElement('div');
+    d.className = 'mem-item';
+    d.innerHTML = `
+      <div class="mem-trigger">${esc(e.trigger)}</div>
+      <div class="mem-response">${esc(e.response)}</div>
+      <div class="mem-footer-row">
+        <span>${new Date(e.updated).toLocaleDateString('pt-BR')}</span>
+        <span class="mem-count-pill">${e.count}×</span>
+      </div>`;
+    list.appendChild(d);
+  });
+}
+
+// ── Events ───────────────────────────────
+function updateSendBtn() {
+  const v = document.getElementById('user-input').value.trim();
+  document.getElementById('btn-send').disabled = !v;
+}
+
+document.getElementById('btn-send').addEventListener('click', send);
+
+document.getElementById('btn-learn').addEventListener('click', () => {
+  if (learnMode) { exitLearn(); return; }
+  const ta = document.getElementById('user-input');
+  const text = ta.value.trim();
+  if (!text) { ta.focus(); ta.placeholder = 'Digite o gatilho primeiro...'; return; }
+  ta.value = ''; ta.style.height = 'auto'; updateSendBtn();
+  addMsg('user', text);
+  enterLearn(text);
+});
+
+document.getElementById('user-input').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+  updateSendBtn();
+});
+
+document.getElementById('user-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+
+document.getElementById('open-mem-btn').addEventListener('click', () => {
+  document.getElementById('mem-panel').classList.add('open');
+  renderMemList();
+});
+
+document.getElementById('close-mem-btn').addEventListener('click', () => {
+  document.getElementById('mem-panel').classList.remove('open');
+});
+
+document.getElementById('mem-backdrop').addEventListener('click', () => {
+  document.getElementById('mem-panel').classList.remove('open');
+});
+
+document.getElementById('clear-btn').addEventListener('click', () => {
+  if (!confirm('Apagar toda a memória de Lumiana?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('messages').innerHTML = '';
+  sessionMsgs = 0;
+  document.getElementById('sess-info').textContent = '0 mensagens';
+  document.getElementById('mem-count').textContent = '0';
+  renderMemList();
+
+  // re-seed defaults
+  seedDefaults();
+
+  const w = document.createElement('div');
+  w.className = 'welcome';
+  w.id = 'welcome';
+  w.innerHTML = `
+    <div class="welcome-icon">✦</div>
+    <h1>Olá, eu sou Lumiana</h1>
+    <p>Memória apagada. Vamos começar de novo!</p>
+    <div class="suggestion-chips">
+      <button class="chip" data-msg="Olá!">👋 Dizer olá</button>
+      <button class="chip" data-msg="Quem é você?">🤖 Quem é você?</button>
+    </div>`;
+  document.getElementById('messages').appendChild(w);
+  bindChips();
+});
+
+document.getElementById('new-chat-btn').addEventListener('click', () => {
+  const msgs = document.getElementById('messages');
+  msgs.innerHTML = '';
+  sessionMsgs = 0;
+  document.getElementById('sess-info').textContent = '0 mensagens';
+  exitLearn();
+
+  const w = document.createElement('div');
+  w.className = 'welcome';
+  w.id = 'welcome';
+  w.innerHTML = `
+    <div class="welcome-icon">✦</div>
+    <h1>Nova conversa</h1>
+    <p>Pronto para continuar aprendendo com você.</p>
+    <div class="suggestion-chips">
+      <button class="chip" data-msg="Olá!">👋 Dizer olá</button>
+      <button class="chip" data-msg="Quem é você?">🤖 Quem é você?</button>
+      <button class="chip" data-msg="Como você aprende?">💡 Como funciona?</button>
+    </div>`;
+  msgs.appendChild(w);
+  bindChips();
+});
+
+document.querySelectorAll('.pill').forEach(p => {
+  p.addEventListener('click', () => {
+    document.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    personality = p.dataset.mode;
+  });
+});
+
+function bindChips() {
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.getElementById('user-input').value = c.dataset.msg;
+      updateSendBtn();
+      send();
+    });
+  });
+}
+
+// ── Seed defaults ─────────────────────────
+function seedDefaults() {
+  const defaults = [
+    ['olá', 'Olá! Como posso ajudar?'],
+    ['oi', 'Oi! Tudo bem por aí?'],
+    ['tudo bem', 'Estou ótima! Pronta para aprender mais. E você?'],
+    ['quem é você', 'Sou Lumiana, uma IA que aprende com cada conversa que temos!'],
+    ['como você aprende', 'Você me ensina usando o botão "Aprender". Guardo tudo no seu navegador, sem internet!'],
+    ['o que você sabe fazer', 'Aprendo padrões de conversa e respondo com base no que me ensinou. Quanto mais ensinar, melhor fico!'],
+    ['tchau', 'Até mais! Foi bom aprender com você 👋'],
+    ['obrigado', 'De nada! Sempre aqui para ajudar.'],
+    ['você é offline', 'Sim! Funciono 100% offline. Nenhum dado sai do seu dispositivo.'],
+  ];
+  defaults.forEach(([t, r]) => teach(t, r));
+}
+
+// ── Init ─────────────────────────────────
+(function init() {
+  const data = mem();
+  if (!data.length) seedDefaults();
+  document.getElementById('mem-count').textContent = mem().length;
+  bindChips();
+})();
+</script>
+</body>
+</html>
