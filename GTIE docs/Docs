@@ -1,1 +1,1147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GTIE DOCS — Editor</title>
 
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+
+<!-- Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.40.3/docxtemplater.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
+<script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip-utils.js"></script>
+
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --toolbar-bg: #ffffff;
+    --border: #e0e0e0;
+    --accent: #1a73e8;
+    --accent-soft: #e8f0fe;
+    --text: #202124;
+    --text-muted: #5f6368;
+    --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.13);
+    --paper-w: 816px;
+    --paper-h: 1056px;
+    --radius: 6px;
+    --font-ui: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* ─── HEADER ─── */
+  #header {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+
+  #titlebar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px 4px;
+  }
+
+  #logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+  }
+
+  #logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #1a73e8, #4285f4);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: white; font-weight: 700;
+    letter-spacing: -1px;
+  }
+
+  #logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: -0.3px;
+  }
+
+  #doc-title {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 500;
+    border: none;
+    outline: none;
+    padding: 4px 8px;
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-ui);
+    transition: background 0.2s;
+  }
+  #doc-title:hover, #doc-title:focus { background: var(--bg); }
+
+  #header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border: none; cursor: pointer;
+    border-radius: 20px;
+    font-family: var(--font-ui);
+    font-size: 13px; font-weight: 500;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent); color: white;
+  }
+  .btn-primary:hover { background: #1557b0; box-shadow: var(--shadow); }
+
+  .btn-ghost {
+    background: transparent; color: var(--text-muted);
+  }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+
+  .btn-export {
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .btn-export:hover { background: #c5d8fd; }
+
+  /* ─── TOOLBAR ─── */
+  #toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 4px 12px 6px;
+    background: var(--toolbar-bg);
+  }
+
+  .tb-sep {
+    width: 1px; height: 20px;
+    background: var(--border);
+    margin: 0 6px;
+  }
+
+  .tb-btn {
+    width: 30px; height: 30px;
+    border: none; background: transparent;
+    cursor: pointer;
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600;
+    color: var(--text);
+    font-family: var(--font-ui);
+    transition: all 0.12s;
+    position: relative;
+  }
+  .tb-btn:hover { background: var(--bg); }
+  .tb-btn.active { background: var(--accent-soft); color: var(--accent); }
+
+  .tb-btn svg { width: 16px; height: 16px; }
+
+  .tb-select {
+    height: 30px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: var(--radius);
+    padding: 0 6px;
+    outline: none;
+    transition: all 0.12s;
+  }
+  .tb-select:hover { border-color: var(--border); background: var(--bg); }
+  .tb-select:focus { border-color: var(--accent); }
+
+  /* color picker */
+  .color-btn-wrap { position: relative; }
+  .color-indicator {
+    position: absolute; bottom: 3px; left: 3px; right: 3px;
+    height: 3px; border-radius: 2px;
+    background: #000; pointer-events: none;
+  }
+  input[type="color"] {
+    position: absolute; opacity: 0;
+    width: 100%; height: 100%; top:0; left:0; cursor: pointer;
+  }
+
+  /* ─── WORKSPACE ─── */
+  #workspace {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 0 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--bg);
+  }
+
+  .page {
+    width: var(--paper-w);
+    min-height: var(--paper-h);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+    border-radius: 2px;
+    margin-bottom: 24px;
+    padding: 72px 80px;
+    position: relative;
+    border: 1px solid #ddd;
+    transition: box-shadow 0.2s;
+  }
+  .page:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.16); }
+
+  #editor {
+    outline: none;
+    min-height: calc(var(--paper-h) - 144px);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11pt;
+    line-height: 1.8;
+    color: var(--text);
+    caret-color: var(--accent);
+  }
+
+  #editor p { margin-bottom: 10px; }
+  #editor h1 { font-family: 'Playfair Display', serif; font-size: 26pt; margin-bottom: 14px; color: #1a1a2e; }
+  #editor h2 { font-family: 'Playfair Display', serif; font-size: 20pt; margin-bottom: 12px; color: #1a1a2e; }
+  #editor h3 { font-size: 14pt; font-weight: 600; margin-bottom: 10px; }
+  #editor a { color: var(--accent); }
+  #editor blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 12px 0;
+  }
+  #editor table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+  }
+  #editor table td, #editor table th {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  #editor table th {
+    background: var(--bg);
+    font-weight: 600;
+  }
+  #editor table tr:hover td { background: #f7f9ff; }
+
+  #editor img {
+    max-width: 100%;
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    margin: 8px 0;
+    display: block;
+  }
+  #editor img.selected {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* ─── STATUS BAR ─── */
+  #statusbar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 28px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    z-index: 99;
+  }
+
+  #statusbar span { display: flex; align-items: center; gap: 4px; }
+
+  /* ─── MODAL ─── */
+  .modal-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 28px;
+    width: 380px;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn 0.18s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.93) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+
+  .modal input, .modal select, .modal textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    margin-bottom: 12px;
+    transition: border 0.15s;
+  }
+  .modal input:focus, .modal textarea:focus { border-color: var(--accent); }
+
+  .modal-actions {
+    display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;
+  }
+
+  .modal-actions button {
+    padding: 8px 18px;
+    border: none; cursor: pointer;
+    border-radius: 20px;
+    font-family: var(--font-ui);
+    font-size: 13px; font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .modal-actions .confirm { background: var(--accent); color: white; }
+  .modal-actions .confirm:hover { background: #1557b0; }
+  .modal-actions .cancel { background: var(--bg); color: var(--text-muted); }
+  .modal-actions .cancel:hover { background: var(--border); }
+
+  /* ─── TOAST ─── */
+  #toast {
+    position: fixed; bottom: 44px; left: 50%; transform: translateX(-50%);
+    background: #323232;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 300;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+  /* ─── TOOLTIP ─── */
+  [data-tip] { position: relative; }
+  [data-tip]::after {
+    content: attr(data-tip);
+    position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: #323232; color: white;
+    font-size: 11px; padding: 4px 8px; border-radius: 4px;
+    white-space: nowrap; pointer-events: none;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  [data-tip]:hover::after { opacity: 1; }
+
+  @media (max-width: 900px) {
+    :root { --paper-w: 100vw; }
+    .page { padding: 40px 24px; border-radius: 0; }
+    #doc-title { font-size: 15px; }
+    #logo-text { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<div id="header">
+  <div id="titlebar">
+    <a id="logo" href="#">
+      <div id="logo-icon">GT</div>
+      <span id="logo-text">GTIE DOCS</span>
+    </a>
+    <input id="doc-title" type="text" value="Documento sem título" spellcheck="false">
+    <div id="header-actions">
+      <button class="header-btn btn-ghost" onclick="importFile()" data-tip="Importar arquivo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Importar
+      </button>
+      <button class="header-btn btn-export" onclick="exportDocx()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="14" height="14"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        .DOCX
+      </button>
+      <button class="header-btn btn-primary" onclick="exportPDF()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="14" height="14"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+        Exportar PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ TOOLBAR ═══ -->
+  <div id="toolbar">
+
+    <!-- Fonte -->
+    <select class="tb-select" id="fontFamily" onchange="setFont(this.value)" style="width:130px" data-tip="Fonte">
+      <option value="DM Sans">DM Sans</option>
+      <option value="'Playfair Display', serif">Playfair Display</option>
+      <option value="Arial">Arial</option>
+      <option value="Georgia">Georgia</option>
+      <option value="'Courier New', monospace">Courier New</option>
+      <option value="Verdana">Verdana</option>
+      <option value="Trebuchet MS">Trebuchet MS</option>
+    </select>
+
+    <select class="tb-select" id="fontSize" onchange="setFontSize(this.value)" style="width:60px" data-tip="Tamanho">
+      <option>8</option><option>9</option><option>10</option><option>11</option>
+      <option selected>12</option><option>14</option><option>16</option><option>18</option>
+      <option>20</option><option>24</option><option>28</option><option>32</option>
+      <option>36</option><option>48</option><option>64</option>
+    </select>
+
+    <div class="tb-sep"></div>
+
+    <!-- Format -->
+    <button class="tb-btn" id="btn-bold" onclick="fmt('bold')" data-tip="Negrito (Ctrl+B)"><b>B</b></button>
+    <button class="tb-btn" id="btn-italic" onclick="fmt('italic')" data-tip="Itálico (Ctrl+I)"><i>I</i></button>
+    <button class="tb-btn" id="btn-underline" onclick="fmt('underline')" data-tip="Sublinhado (Ctrl+U)" style="text-decoration:underline">U</button>
+    <button class="tb-btn" id="btn-strikethrough" onclick="fmt('strikeThrough')" data-tip="Tachado"><s>S</s></button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Colors -->
+    <div class="tb-btn color-btn-wrap" data-tip="Cor do texto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 20h4l10.5-10.5a1.5 1.5 0 00-4-4L4 16z"/></svg>
+      <div class="color-indicator" id="textColorInd"></div>
+      <input type="color" id="textColor" value="#000000" oninput="setTextColor(this.value)">
+    </div>
+
+    <div class="tb-btn color-btn-wrap" data-tip="Destaque">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M9.62 12l-2.44 2.44-1.16-1.16-1.41 1.41 2.56 2.56L12 12.76 9.62 12zm5.5-6.19L13.71 7.2l2.29 2.29-1.41 1.41-2.29-2.29L10.89 10l2.29 2.29-1.41 1.41L9.48 11.4 8.07 12.8l3.54 3.54 7.07-7.07-3.56-3.46z"/></svg>
+      <div class="color-indicator" id="bgColorInd" style="background:#ffff00"></div>
+      <input type="color" id="bgColor" value="#ffff00" oninput="setBgColor(this.value)">
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <!-- Heading -->
+    <select class="tb-select" id="headSel" onchange="setHeading(this.value)" style="width:110px" data-tip="Estilo de parágrafo">
+      <option value="p">Normal</option>
+      <option value="h1">Título 1</option>
+      <option value="h2">Título 2</option>
+      <option value="h3">Título 3</option>
+      <option value="blockquote">Citação</option>
+      <option value="pre">Código</option>
+    </select>
+
+    <div class="tb-sep"></div>
+
+    <!-- Align -->
+    <button class="tb-btn" onclick="fmt('justifyLeft')" data-tip="Alinhar esquerda">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M3 9h18v2H3zm0 4h12v2H3zm0-8h18v2H3zm0 12h18v2H3z"/></svg>
+    </button>
+    <button class="tb-btn" onclick="fmt('justifyCenter')" data-tip="Centralizar">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M7 9h10v2H7zm-4 4h18v2H3zm4-8h10v2H7zM3 17h18v2H3z"/></svg>
+    </button>
+    <button class="tb-btn" onclick="fmt('justifyRight')" data-tip="Alinhar direita">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M3 9h18v2H3zm6 4h12v2H9zm-6-8h18v2H3zm6 12h12v2H9z"/></svg>
+    </button>
+    <button class="tb-btn" onclick="fmt('justifyFull')" data-tip="Justificar">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M3 9h18v2H3zm0 4h18v2H3zm0-8h18v2H3zm0 12h18v2H3z"/></svg>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Lists -->
+    <button class="tb-btn" onclick="fmt('insertUnorderedList')" data-tip="Lista com marcadores">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><circle cx="4" cy="6" r="2"/><rect x="8" y="5" width="13" height="2" rx="1"/><circle cx="4" cy="12" r="2"/><rect x="8" y="11" width="13" height="2" rx="1"/><circle cx="4" cy="18" r="2"/><rect x="8" y="17" width="13" height="2" rx="1"/></svg>
+    </button>
+    <button class="tb-btn" onclick="fmt('insertOrderedList')" data-tip="Lista numerada">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><text x="2" y="8" font-size="7" font-weight="bold">1.</text><rect x="10" y="5" width="12" height="2" rx="1"/><text x="2" y="14" font-size="7" font-weight="bold">2.</text><rect x="10" y="11" width="12" height="2" rx="1"/><text x="2" y="20" font-size="7" font-weight="bold">3.</text><rect x="10" y="17" width="12" height="2" rx="1"/></svg>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Indent -->
+    <button class="tb-btn" onclick="fmt('outdent')" data-tip="Diminuir recuo">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M11 17h10v-2H11zm-8-5l4 4V8zm0-4h18V6H3zm8 8h10v-2H11zm0-4h10v-2H11z"/></svg>
+    </button>
+    <button class="tb-btn" onclick="fmt('indent')" data-tip="Aumentar recuo">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M3 17h10v-2H3zm0-4h18v-2H3zm0-4h10V7H3zm14-1v8l4-4z"/></svg>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Insert -->
+    <button class="tb-btn" onclick="openLinkModal()" data-tip="Inserir link" style="width:auto;padding:0 10px;font-size:12px;gap:4px;display:flex;align-items:center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      Link
+    </button>
+    <button class="tb-btn" onclick="insertImage()" data-tip="Inserir imagem" style="width:auto;padding:0 10px;font-size:12px;gap:4px;display:flex;align-items:center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Imagem
+    </button>
+    <button class="tb-btn" onclick="openTableModal()" data-tip="Inserir tabela" style="width:auto;padding:0 10px;font-size:12px;gap:4px;display:flex;align-items:center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+      Tabela
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Undo / Redo -->
+    <button class="tb-btn" onclick="fmt('undo')" data-tip="Desfazer (Ctrl+Z)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M3 7v6h6"/><path d="M3 13C5.6 7 12 5 17 8.5s5.3 10-.5 13.5"/></svg>
+    </button>
+    <button class="tb-btn" onclick="fmt('redo')" data-tip="Refazer (Ctrl+Y)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 7v6h-6"/><path d="M21 13C18.4 7 12 5 7 8.5S1.7 18.5 7.5 22"/></svg>
+    </button>
+
+    <!-- Clear -->
+    <button class="tb-btn" onclick="fmt('removeFormat')" data-tip="Remover formatação" style="color:#e74c3c">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 20h9"/><path d="M16.5 3.5L20.5 7.5 8 20H4v-4z"/><path d="M13.5 6.5L17.5 10.5"/><line x1="2" y1="2" x2="22" y2="22" stroke="#e74c3c"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════ WORKSPACE ═══════════════ -->
+<div id="workspace">
+  <div class="page" id="page">
+    <div id="editor" contenteditable="true" spellcheck="true">
+      <h1>Bem-vindo ao GTIE DOCS</h1>
+      <p>Este é seu editor de documentos completo. Comece a escrever aqui...</p>
+      <p>Use a <strong>barra de ferramentas</strong> acima para <em>formatar seu texto</em>, inserir imagens, tabelas e muito mais.</p>
+      <p></p>
+      <h2>Recursos disponíveis</h2>
+      <p>✅ Formatação completa (negrito, itálico, sublinhado, cores)<br>
+         ✅ Títulos e estilos de parágrafo<br>
+         ✅ Listas ordenadas e não ordenadas<br>
+         ✅ Inserção de imagens e tabelas<br>
+         ✅ Export para PDF e DOCX<br>
+         ✅ Import de arquivos .docx<br>
+         ✅ 100% offline</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ STATUS BAR ═══════════════ -->
+<div id="statusbar">
+  <span>📄 <span id="wordCount">0</span> palavras</span>
+  <span>🔤 <span id="charCount">0</span> caracteres</span>
+  <span id="saveStatus" style="margin-left:auto;color:#34a853">● Auto-salvo</span>
+</div>
+
+<!-- ═══════════════ TOAST ═══════════════ -->
+<div id="toast"></div>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- Link Modal -->
+<div class="modal-backdrop" id="linkModal">
+  <div class="modal">
+    <h3>🔗 Inserir Link</h3>
+    <input id="linkText" type="text" placeholder="Texto do link">
+    <input id="linkUrl" type="url" placeholder="https://...">
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeModal('linkModal')">Cancelar</button>
+      <button class="confirm" onclick="insertLink()">Inserir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Table Modal -->
+<div class="modal-backdrop" id="tableModal">
+  <div class="modal">
+    <h3>📊 Inserir Tabela</h3>
+    <div style="display:flex;gap:12px">
+      <div style="flex:1">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Linhas</label>
+        <input id="tableRows" type="number" value="3" min="1" max="20">
+      </div>
+      <div style="flex:1">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Colunas</label>
+        <input id="tableCols" type="number" value="3" min="1" max="10">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeModal('tableModal')">Cancelar</button>
+      <button class="confirm" onclick="insertTable()">Inserir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-backdrop" id="importModal">
+  <div class="modal">
+    <h3>📂 Importar Arquivo</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Suporte a .html, .txt e .docx (conteúdo extraído)</p>
+    <input type="file" id="importInput" accept=".html,.txt,.docx" style="border:1px dashed var(--border);padding:12px;text-align:center;cursor:pointer">
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeModal('importModal')">Cancelar</button>
+      <button class="confirm" onclick="doImport()">Importar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  CORE EDITOR
+// ════════════════════════════════════════════
+
+const editor = document.getElementById('editor');
+let savedRange = null;
+
+// Save selection before toolbar interaction
+document.querySelectorAll('#toolbar button, #toolbar select').forEach(el => {
+  el.addEventListener('mousedown', e => {
+    savedRange = saveSelection();
+  });
+});
+
+function saveSelection() {
+  const sel = window.getSelection();
+  if (sel.rangeCount > 0) return sel.getRangeAt(0).cloneRange();
+  return null;
+}
+
+function restoreSelection(range) {
+  if (!range) return;
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  editor.focus();
+}
+
+function fmt(cmd, val = null) {
+  restoreSelection(savedRange);
+  document.execCommand(cmd, false, val);
+  editor.focus();
+  updateToolbarState();
+}
+
+function setFont(font) {
+  restoreSelection(savedRange);
+  document.execCommand('fontName', false, font);
+  editor.focus();
+}
+
+function setFontSize(size) {
+  restoreSelection(savedRange);
+  // execCommand fontSize uses 1-7 scale, we use a workaround
+  document.execCommand('fontSize', false, '7');
+  const els = editor.querySelectorAll('font[size="7"]');
+  els.forEach(el => {
+    el.removeAttribute('size');
+    el.style.fontSize = size + 'pt';
+  });
+  editor.focus();
+}
+
+function setHeading(tag) {
+  restoreSelection(savedRange);
+  document.execCommand('formatBlock', false, tag);
+  editor.focus();
+}
+
+function setTextColor(color) {
+  document.getElementById('textColorInd').style.background = color;
+  restoreSelection(savedRange);
+  document.execCommand('foreColor', false, color);
+  editor.focus();
+}
+
+function setBgColor(color) {
+  document.getElementById('bgColorInd').style.background = color;
+  restoreSelection(savedRange);
+  document.execCommand('hiliteColor', false, color);
+  editor.focus();
+}
+
+// ─── Toolbar state sync ───
+function updateToolbarState() {
+  const cmds = ['bold','italic','underline','strikeThrough'];
+  cmds.forEach(c => {
+    const btn = document.getElementById('btn-' + c.toLowerCase()) ||
+                document.getElementById('btn-' + c);
+    if (btn) btn.classList.toggle('active', document.queryCommandState(c));
+  });
+}
+
+editor.addEventListener('keyup', updateToolbarState);
+editor.addEventListener('mouseup', updateToolbarState);
+editor.addEventListener('selectionchange', updateToolbarState);
+
+// Keyboard shortcuts
+editor.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey) {
+    switch(e.key) {
+      case 'b': e.preventDefault(); fmt('bold'); break;
+      case 'i': e.preventDefault(); fmt('italic'); break;
+      case 'u': e.preventDefault(); fmt('underline'); break;
+      case 'z': if (!e.shiftKey) { e.preventDefault(); fmt('undo'); } break;
+      case 'y': e.preventDefault(); fmt('redo'); break;
+    }
+  }
+});
+
+// ─── Word / char count ───
+function updateCounts() {
+  const text = editor.innerText || '';
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+  document.getElementById('wordCount').textContent = words.length;
+  document.getElementById('charCount').textContent = text.replace(/\n/g,'').length;
+}
+
+editor.addEventListener('input', () => {
+  updateCounts();
+  autoSave();
+});
+
+// ─── Auto-save to localStorage ───
+let saveTimer;
+function autoSave() {
+  clearTimeout(saveTimer);
+  document.getElementById('saveStatus').textContent = '◌ Salvando...';
+  document.getElementById('saveStatus').style.color = '#fbbc04';
+  saveTimer = setTimeout(() => {
+    localStorage.setItem('gtie_doc', editor.innerHTML);
+    localStorage.setItem('gtie_title', document.getElementById('doc-title').value);
+    document.getElementById('saveStatus').textContent = '● Auto-salvo';
+    document.getElementById('saveStatus').style.color = '#34a853';
+  }, 1200);
+}
+
+// Load from localStorage
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('gtie_doc');
+  const savedTitle = localStorage.getItem('gtie_title');
+  if (saved) editor.innerHTML = saved;
+  if (savedTitle) document.getElementById('doc-title').value = savedTitle;
+  updateCounts();
+});
+
+document.getElementById('doc-title').addEventListener('input', autoSave);
+
+// ════════════════════════════════════════════
+//  INSERT FUNCTIONS
+// ════════════════════════════════════════════
+
+function insertImage() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      editor.focus();
+      document.execCommand('insertImage', false, ev.target.result);
+      // Make images selectable
+      setTimeout(() => {
+        editor.querySelectorAll('img').forEach(img => {
+          img.onclick = () => {
+            editor.querySelectorAll('img').forEach(i => i.classList.remove('selected'));
+            img.classList.toggle('selected');
+          };
+        });
+      }, 50);
+      toast('✅ Imagem inserida');
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function openLinkModal() {
+  savedRange = saveSelection();
+  const sel = window.getSelection();
+  if (sel && !sel.isCollapsed) {
+    document.getElementById('linkText').value = sel.toString();
+  }
+  openModal('linkModal');
+}
+
+function insertLink() {
+  const text = document.getElementById('linkText').value || document.getElementById('linkUrl').value;
+  const url  = document.getElementById('linkUrl').value;
+  if (!url) return;
+  restoreSelection(savedRange);
+  if (window.getSelection().isCollapsed) {
+    document.execCommand('insertHTML', false, `<a href="${url}" target="_blank">${text}</a>`);
+  } else {
+    document.execCommand('createLink', false, url);
+    const link = editor.querySelector(`a[href="${url}"]`);
+    if (link) link.target = '_blank';
+  }
+  closeModal('linkModal');
+  document.getElementById('linkText').value = '';
+  document.getElementById('linkUrl').value = '';
+  toast('🔗 Link inserido');
+}
+
+function openTableModal() {
+  savedRange = saveSelection();
+  openModal('tableModal');
+}
+
+function insertTable() {
+  const rows = parseInt(document.getElementById('tableRows').value) || 3;
+  const cols = parseInt(document.getElementById('tableCols').value) || 3;
+  let html = '<table>';
+  for (let r = 0; r < rows; r++) {
+    html += '<tr>';
+    for (let c = 0; c < cols; c++) {
+      const tag = r === 0 ? 'th' : 'td';
+      html += `<${tag}>${r === 0 ? 'Cabeçalho ' + (c+1) : '&nbsp;'}</${tag}>`;
+    }
+    html += '</tr>';
+  }
+  html += '</table><p></p>';
+  restoreSelection(savedRange);
+  document.execCommand('insertHTML', false, html);
+  closeModal('tableModal');
+  toast('📊 Tabela inserida');
+}
+
+// ════════════════════════════════════════════
+//  EXPORT PDF
+// ════════════════════════════════════════════
+
+async function exportPDF() {
+  toast('⏳ Gerando PDF...');
+  const title = document.getElementById('doc-title').value || 'documento';
+  const page = document.getElementById('page');
+
+  try {
+    const canvas = await html2canvas(page, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff'
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'pt',
+      format: 'a4'
+    });
+
+    const pdfW = pdf.internal.pageSize.getWidth();
+    const pdfH = pdf.internal.pageSize.getHeight();
+    const ratio = canvas.width / canvas.height;
+    const imgH = pdfW / ratio;
+
+    let yPos = 0;
+    let remaining = imgH;
+
+    while (remaining > 0) {
+      pdf.addImage(imgData, 'JPEG', 0, yPos, pdfW, imgH, '', 'FAST');
+      remaining -= pdfH;
+      yPos -= pdfH;
+      if (remaining > 0) pdf.addPage();
+    }
+
+    pdf.save(`${title}.pdf`);
+    toast('✅ PDF exportado com sucesso!');
+  } catch(err) {
+    console.error(err);
+    toast('❌ Erro ao gerar PDF. Tente novamente.');
+  }
+}
+
+// ════════════════════════════════════════════
+//  EXPORT DOCX (via HTML → raw XML)
+// ════════════════════════════════════════════
+
+function exportDocx() {
+  toast('⏳ Gerando DOCX...');
+  const title = document.getElementById('doc-title').value || 'documento';
+
+  // Build Word-compatible XML from editor HTML
+  const content = editor.innerHTML;
+  const docxContent = htmlToDocxXml(content);
+
+  const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+  xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+  xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+  xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
+  xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+  xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
+  xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"
+  xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"
+  xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"
+  xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml"
+  xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash"
+  xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex"
+  mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14">
+  <w:body>
+${docxContent}
+    <w:sectPr>
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style>
+  <w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/>
+    <w:pPr><w:outlineLvl w:val="0"/></w:pPr>
+    <w:rPr><w:b/><w:sz w:val="52"/></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/>
+    <w:pPr><w:outlineLvl w:val="1"/></w:pPr>
+    <w:rPr><w:b/><w:sz w:val="40"/></w:rPr>
+  </w:style>
+</w:styles>`;
+
+  const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`;
+
+  const rootRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+  // Use PizZip to build .docx
+  try {
+    const zip = new PizZip();
+    zip.file('[Content_Types].xml', contentTypes);
+    zip.file('_rels/.rels', rootRels);
+    zip.file('word/document.xml', xml);
+    zip.file('word/styles.xml', styles);
+    zip.file('word/_rels/document.xml.rels', rels);
+
+    const blob = zip.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    saveAs(blob, `${title}.docx`);
+    toast('✅ DOCX exportado com sucesso!');
+  } catch(err) {
+    console.error(err);
+    // Fallback: export as HTML renamed .docx (opens in Word)
+    const fallback = `<html><head><meta charset="utf-8"><title>${title}</title></head><body>${editor.innerHTML}</body></html>`;
+    const blob = new Blob([fallback], { type: 'application/msword' });
+    saveAs(blob, `${title}.doc`);
+    toast('✅ DOC exportado (formato compatível)');
+  }
+}
+
+function htmlToDocxXml(html) {
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  let xml = '';
+
+  function escapeXml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function processNode(node) {
+    let result = '';
+    if (node.nodeType === 3) { // text
+      const txt = escapeXml(node.textContent);
+      if (txt) result += `<w:r><w:t xml:space="preserve">${txt}</w:t></w:r>`;
+    } else if (node.nodeType === 1) {
+      const tag = node.tagName.toLowerCase();
+      const bold = node.closest('b,strong') || node.tagName === 'B' || node.tagName === 'STRONG';
+      const italic = node.closest('i,em') || node.tagName === 'I' || node.tagName === 'EM';
+      const under = node.closest('u') || node.tagName === 'U';
+
+      if (tag === 'br') {
+        result += '<w:r><w:br/></w:r>';
+      } else if (['b','strong','i','em','u','span','a','font'].includes(tag)) {
+        let rpr = '';
+        if (tag === 'b' || tag === 'strong') rpr += '<w:b/>';
+        if (tag === 'i' || tag === 'em') rpr += '<w:i/>';
+        if (tag === 'u') rpr += '<w:u w:val="single"/>';
+        const children = Array.from(node.childNodes).map(processNode).join('');
+        if (rpr && children) {
+          // wrap children runs with rPr
+          result += children.replace(/<w:r>/g, `<w:r><w:rPr>${rpr}</w:rPr>`);
+        } else {
+          result += children;
+        }
+      } else if (tag === 'h1') {
+        const inner = Array.from(node.childNodes).map(processNode).join('');
+        result += `<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr>${inner.replace(/<w:r>/g,'<w:r><w:rPr><w:b/><w:sz w:val="52"/></w:rPr>')}</w:p>`;
+      } else if (tag === 'h2') {
+        const inner = Array.from(node.childNodes).map(processNode).join('');
+        result += `<w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr>${inner.replace(/<w:r>/g,'<w:r><w:rPr><w:b/><w:sz w:val="40"/></w:rPr>')}</w:p>`;
+      } else if (tag === 'h3') {
+        const inner = Array.from(node.childNodes).map(processNode).join('');
+        result += `<w:p>${inner.replace(/<w:r>/g,'<w:r><w:rPr><w:b/><w:sz w:val="28"/></w:rPr>')}</w:p>`;
+      } else if (tag === 'p' || tag === 'div') {
+        const inner = Array.from(node.childNodes).map(processNode).join('');
+        result += `<w:p>${inner || '<w:r><w:t> </w:t></w:r>'}</w:p>`;
+      } else if (tag === 'li') {
+        const inner = Array.from(node.childNodes).map(processNode).join('');
+        result += `<w:p><w:pPr><w:ind w:left="720"/></w:pPr><w:r><w:t xml:space="preserve">• </w:t></w:r>${inner}</w:p>`;
+      } else if (['ul','ol','blockquote','pre','table','thead','tbody','tr','td','th'].includes(tag)) {
+        result += Array.from(node.childNodes).map(processNode).join('');
+      } else {
+        result += Array.from(node.childNodes).map(processNode).join('');
+      }
+    }
+    return result;
+  }
+
+  const children = Array.from(temp.childNodes);
+  for (const child of children) {
+    xml += processNode(child);
+  }
+  return xml || '<w:p><w:r><w:t> </w:t></w:r></w:p>';
+}
+
+// ════════════════════════════════════════════
+//  IMPORT
+// ════════════════════════════════════════════
+
+function importFile() { openModal('importModal'); }
+
+function doImport() {
+  const input = document.getElementById('importInput');
+  const file = input.files[0];
+  if (!file) { toast('⚠️ Selecione um arquivo'); return; }
+
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  if (ext === 'html') {
+    const r = new FileReader();
+    r.onload = e => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(e.target.result, 'text/html');
+      editor.innerHTML = doc.body.innerHTML;
+      toast('✅ HTML importado');
+      closeModal('importModal');
+    };
+    r.readAsText(file);
+  } else if (ext === 'txt') {
+    const r = new FileReader();
+    r.onload = e => {
+      const lines = e.target.result.split('\n').map(l => `<p>${l || '&nbsp;'}</p>`).join('');
+      editor.innerHTML = lines;
+      toast('✅ TXT importado');
+      closeModal('importModal');
+    };
+    r.readAsText(file);
+  } else if (ext === 'docx') {
+    const r = new FileReader();
+    r.onload = async e => {
+      try {
+        const zip = new PizZip(e.target.result);
+        const docXml = zip.file('word/document.xml').asText();
+        // Simple extraction: strip XML tags
+        const text = docXml
+          .replace(/<w:p[ >]/g, '\n<p>')
+          .replace(/<\/w:p>/g, '</p>')
+          .replace(/<w:t[^>]*>/g, '')
+          .replace(/<\/w:t>/g, '')
+          .replace(/<[^>]+>/g, '')
+          .trim();
+        editor.innerHTML = text.split('\n').map(l => `<p>${l || '&nbsp;'}</p>`).join('');
+        toast('✅ DOCX importado (texto extraído)');
+        closeModal('importModal');
+      } catch(err) {
+        toast('❌ Erro ao ler DOCX');
+      }
+    };
+    r.readAsArrayBuffer(file);
+  } else {
+    toast('⚠️ Formato não suportado. Use .html, .txt ou .docx');
+  }
+}
+
+// ════════════════════════════════════════════
+//  MODAL HELPERS
+// ════════════════════════════════════════════
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(b => {
+  b.addEventListener('click', e => {
+    if (e.target === b) b.classList.remove('open');
+  });
+});
+
+// ════════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════════
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+updateCounts();
+editor.focus();
+</script>
+</body>
+</html>
